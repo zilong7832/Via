@@ -137,7 +137,8 @@ export default function App() {
         style: minimalStyle,
         center: [0, 20],
         zoom: 1.4,
-        attributionControl: false
+        attributionControl: false,
+        interactive: true
       });
 
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
@@ -213,7 +214,7 @@ export default function App() {
     } catch (err: any) {
       setMapError(String(err));
     }
-  }, []);
+  }, [embedMode]);
 
   // ====== 搜索 ======
   useEffect(() => {
@@ -524,13 +525,20 @@ export default function App() {
         background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.1)",
         color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: embedMode ? 200 : 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
       }}>
-        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.02em" }}>Travel Footprints</div>
+        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.02em" }}>
+          {embedMode ? `${stats.footprints} Footprints` : "Travel Footprints"}
+        </div>
         <div style={{ marginTop: 4, fontSize: 13, opacity: 0.8 }}>
-          {publishedLoading ? "Loading published map…" : `${stats.countries} Countries · ${stats.footprints} Footprints`}
+          {publishedLoading
+            ? "Loading published map…"
+            : embedMode
+              ? "Across the world"
+              : `${stats.countries} Countries · ${stats.footprints} Footprints`}
         </div>
         {mapError && <div style={{ color: "red", fontSize: 12 }}>{mapError}</div>}
 
         {/* Tag List */}
+        {!embedMode && (
         <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
           {tags.map(t => {
             const isEditing = editingTag === t;
@@ -581,6 +589,7 @@ export default function App() {
             }}>+</button>
           ))}
         </div>
+        )}
         {/* 🟢 修改后的：数据备份区 (带筛选) */}
         {!publishedMode && (
         <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: 10, position: "relative" }}>
