@@ -3,7 +3,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { geocode } from "./geocode";
-import { loadTrips, saveTrips, loadTags, saveTags, exportData, importData } from "./storage";
+import { loadTrips, saveTrips, loadTags, saveTags, exportData, importData, loadPublishedData } from "./storage";
 import { Pill } from "./components/UI/Pill";
 import { 
   uniq, 
@@ -27,6 +27,9 @@ const THEME = {
 };
 
 export default function App() {
+  const query = useMemo(() => new URLSearchParams(window.location.search), []);
+  const embedMode = query.get("embed") === "1";
+  const publishedMode = embedMode || query.get("public") === "1";
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -34,7 +37,7 @@ export default function App() {
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
 
   // ====== Tag 状态管理 ======
-  const [tags, setTagsState] = useState<string[]>(() => loadTags());
+  const [tags, setTagsState] = useState<string[]>(() => publishedMode ? [] : loadTags());
   const [tag, setTag] = useState<TagId>(() => tags.length > 0 ? tags[0] : "Me");
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTagVal, setNewTagVal] = useState("");
@@ -42,13 +45,30 @@ export default function App() {
   const [editTagVal, setEditTagVal] = useState("");
 
   const [view, setView] = useState<ViewMode>("world");
-  const [trips, setTrips] = useState<Trip[]>(() => loadTrips());
+  const [trips, setTrips] = useState<Trip[]>(() => publishedMode ? [] : loadTrips());
+  const [publishedLoading, setPublishedLoading] = useState(publishedMode);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [q, setQ] = useState("");
   const [items, setItems] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!publishedMode) return;
+
+    loadPublishedData()
+      .then((data) => {
+        const nextTags = data.tags.length
+          ? data.tags
+          : Array.from(new Set(data.trips.map((trip) => trip.tag)));
+        setTrips(data.trips);
+        setTagsState(nextTags);
+        if (nextTags.length) setTag(nextTags[0]);
+      })
+      .catch((error) => setMapError(error instanceof Error ? error.message : String(error)))
+      .finally(() => setPublishedLoading(false));
+  }, [publishedMode]);
 
   // ====== 统计与国旗 ======
   const stats = useMemo(() => {
@@ -500,13 +520,13 @@ export default function App() {
 
       {/* Stats Card */}
       <div style={{
-        position: "absolute", top: 14, left: 14, padding: 16, borderRadius: 20,
+        position: "absolute", top: embedMode ? 10 : 14, left: embedMode ? 10 : 14, padding: embedMode ? 12 : 16, borderRadius: 20,
         background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.1)",
-        color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
+        color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: embedMode ? 200 : 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
       }}>
         <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.02em" }}>Travel Footprints</div>
         <div style={{ marginTop: 4, fontSize: 13, opacity: 0.8 }}>
-          {stats.countries} Countries · {stats.footprints} Footprints
+          {publishedLoading ? "Loading published map…" : `${stats.countries} Countries · ${stats.footprints} Footprints`}
         </div>
         {mapError && <div style={{ color: "red", fontSize: 12 }}>{mapError}</div>}
 
@@ -528,8 +548,8 @@ export default function App() {
                    />
                  ) : (
                   <Pill active={isActive} onClick={() => setTag(t)}>
-                    <span onDoubleClick={() => startEditTag(t)} title="Double click to rename">{t}</span>
-                    {tags.length > 1 && (
+                    <span onDoubleClick={() => !publishedMode && startEditTag(t)} title={publishedMode ? undefined : "Double click to rename"}>{t}</span>
+                    {!publishedMode && tags.length > 1 && (
                       <span 
                         onClick={(e) => { e.stopPropagation(); deleteTag(t); }}
                         style={{ marginLeft: 6, opacity: 0.6, cursor: "pointer", fontSize: 14, lineHeight: 1 }}
@@ -544,7 +564,7 @@ export default function App() {
 
           
           {/* Add Tag Inline */}
-          {isAddingTag ? (
+          {!publishedMode && (isAddingTag ? (
             <input 
               autoFocus
               value={newTagVal}
@@ -559,9 +579,10 @@ export default function App() {
                padding: "4px 10px", borderRadius: 99, border: "1px dashed rgba(255,255,255,0.3)",
                background: "transparent", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 14
             }}>+</button>
-          )}
+          ))}
         </div>
         {/* 🟢 修改后的：数据备份区 (带筛选) */}
+        {!publishedMode && (
         <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: 10, position: "relative" }}>
             
             {/* 1. 备份按钮 (点击切换菜单) */}
@@ -623,6 +644,7 @@ export default function App() {
               <input type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
             </label>
          </div>
+        )}
       </div>
 
       {/* Flag Bar (底部国旗条 - 无背景) */}
@@ -646,17 +668,17 @@ export default function App() {
       </div>
 
       {/* Add Button */}
-      <button onClick={() => setModalOpen(true)} style={{
+      {!publishedMode && <button onClick={() => setModalOpen(true)} style={{
           position: "absolute", right: 20, bottom: 20, width: 52, height: 52,
           borderRadius: 20, border: "none",
           background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
           color: "white", fontSize: 28, cursor: "pointer", boxShadow: "0 8px 20px rgba(59,130,246,0.4)",
           display: "flex", alignItems: "center", justifyContent: "center"
         }}
-      >＋</button>
+      >＋</button>}
 
       {/* Modal */}
-      {modalOpen && (
+      {!publishedMode && modalOpen && (
         <div onClick={() => setModalOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)" }}>
           <div onClick={(e) => e.stopPropagation()} style={{
             position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)",

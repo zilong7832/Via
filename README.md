@@ -32,6 +32,19 @@
 
 ---
 
+## 🌐 Publish and Embed Your Map
+
+The app supports a public, read-only map backed by `public/footprints.json`:
+
+* `/?public=1` opens the full public map.
+* `/?embed=1` opens the compact version intended for an iframe.
+* `/` keeps the original editable, browser-local experience.
+
+To update the public map, export a backup from the editable app, replace
+`public/footprints.json` with that file, and commit and push the change. The
+public modes accept both the original array backup format and the newer
+versioned `{ "version", "tags", "trips" }` format.
+
 ## 🚀 Getting Started
 
 ### Option 1: Use Online (Recommended for Users)

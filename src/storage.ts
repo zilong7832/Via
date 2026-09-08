@@ -3,6 +3,33 @@ import type { Trip } from "./types";
 const KEY = "travel-footprints:trips";
 const TAGS_KEY = "travel-footprints:tags";
 
+export type FootprintsData = {
+  version: number;
+  tags: string[];
+  trips: Trip[];
+};
+
+function parseFootprintsData(value: unknown): FootprintsData {
+  if (Array.isArray(value)) {
+    const trips = value as Trip[];
+    return { version: 1, tags: Array.from(new Set(trips.map((trip) => trip.tag))), trips };
+  }
+
+  if (value && typeof value === "object") {
+    const data = value as Partial<FootprintsData>;
+    if (Array.isArray(data.trips)) {
+      const inferredTags = Array.from(new Set(data.trips.map((trip) => trip.tag)));
+      return {
+        version: typeof data.version === "number" ? data.version : 2,
+        tags: Array.isArray(data.tags) ? data.tags : inferredTags,
+        trips: data.trips,
+      };
+    }
+  }
+
+  throw new Error("Invalid footprint data format");
+}
+
 
 export function loadTrips(): Trip[] {
   try {
@@ -38,6 +65,12 @@ export function saveTags(tags: string[]) {
   localStorage.setItem(TAGS_KEY, JSON.stringify(tags));
 }
 
+export async function loadPublishedData(): Promise<FootprintsData> {
+  const response = await fetch("/footprints.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error(`Could not load published footprints (${response.status})`);
+  return parseFootprintsData(await response.json());
+}
+
 // 🟢 导出功能：把数据变成文件下载
 export function exportData(trips: Trip[]) {
   const dataStr = JSON.stringify(trips, null, 2); // 格式化，好看一点
@@ -60,17 +93,11 @@ export function importData(file: File): Promise<Trip[]> {
     reader.onload = (e) => {
       try {
         const result = e.target?.result as string;
-        const parsed = JSON.parse(result);
-        if (Array.isArray(parsed)) {
-          resolve(parsed);
-        } else {
-          reject("Invalid data format: Not an array");
-        }
-      } catch (err) {
+        resolve(parseFootprintsData(JSON.parse(result)).trips);
+      } catch {
         reject("Invalid JSON file");
       }
     };
     reader.readAsText(file);
   });
 }
-
