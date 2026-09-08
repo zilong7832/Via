@@ -64,7 +64,7 @@ const LIGHT_THEME = {
   hiOutline: "#d2ad35",
   hiOpacity: 0.88,
   pointColor: "#ffbf00",
-  pointStrokeColor: "#765500",
+  pointStrokeColor: "#c58f00",
   pointStrokeWidth: 1.5,
   transitFill: "#74716b",
   transitOutline: "#5d5953",
