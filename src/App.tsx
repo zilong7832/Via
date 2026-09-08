@@ -47,6 +47,8 @@ const DARK_THEME = {
   hiOutline: "#729bb9",
   hiOpacity: 1.0,
   pointColor: "#29dff2",
+  pointStrokeColor: "transparent",
+  pointStrokeWidth: 0,
   transitFill: "#d4d3d5",
   transitOutline: "#d4d3d5",
   transitOpacity: 0.26,
@@ -58,10 +60,12 @@ const LIGHT_THEME = {
   pageBackground: "#fbfaf7",
   baseFill: "#f1ede4",
   baseLine: "#d9cfb8",
-  hiFill: "#edc34f",
-  hiOutline: "#d4a72c",
-  hiOpacity: 0.86,
-  pointColor: "#ffd23f",
+  hiFill: "#8fbad3",
+  hiOutline: "#638eaa",
+  hiOpacity: 0.9,
+  pointColor: "#ffc400",
+  pointStrokeColor: "#324b63",
+  pointStrokeWidth: 1.5,
   transitFill: "#74716b",
   transitOutline: "#5d5953",
   transitOpacity: 0.7,
@@ -352,7 +356,8 @@ export default function App() {
             "circle-color": THEME.pointColor,
             "circle-radius": ["interpolate", ["linear"], ["zoom"], 1, 2, 6, 4],
             "circle-opacity": 1,
-            "circle-stroke-width": 0
+            "circle-stroke-width": THEME.pointStrokeWidth,
+            "circle-stroke-color": THEME.pointStrokeColor
           }
         });
 
@@ -386,6 +391,8 @@ export default function App() {
       map.setPaintProperty(`${prefix}-transit-line`, "line-color", THEME.transitOutline);
     });
     map.setPaintProperty("trip-points-layer", "circle-color", THEME.pointColor);
+    map.setPaintProperty("trip-points-layer", "circle-stroke-color", THEME.pointStrokeColor);
+    map.setPaintProperty("trip-points-layer", "circle-stroke-width", THEME.pointStrokeWidth);
     map.setPaintProperty("trip-points-transit-layer", "circle-color", THEME.transitPointColor);
     map.setPaintProperty("trip-points-transit-layer", "circle-opacity", THEME.transitPointOpacity);
   }, [colorMode, mapReady]);
