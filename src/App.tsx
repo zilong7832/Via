@@ -40,18 +40,18 @@ function getUSStateKey(trip: Trip): string | null {
 }
 
 const DARK_THEME = {
-  pageBackground: "#172033",
-  baseFill: "#26364f",
-  baseLine: "#465875",
-  hiFill: "#d7ad43",    // Visited areas
-  hiOutline: "#f0cf75",
-  hiOpacity: 0.88,
-  pointColor: "#ffe66d", // Visited points
-  transitFill: "#aeb7c3",
-  transitOutline: "#c7ced7",
-  transitOpacity: 0.52,
-  transitPointColor: "#c4cbd4",
-  transitPointOpacity: 0.82
+  pageBackground: "#0b1220",
+  baseFill: "#152238",
+  baseLine: "#2b3a55",
+  hiFill: "#45769c",
+  hiOutline: "#729bb9",
+  hiOpacity: 1.0,
+  pointColor: "#29dff2",
+  transitFill: "#d4d3d5",
+  transitOutline: "#d4d3d5",
+  transitOpacity: 0.26,
+  transitPointColor: "#d4d3d5",
+  transitPointOpacity: 0.48
 };
 
 const LIGHT_THEME = {
@@ -62,11 +62,11 @@ const LIGHT_THEME = {
   hiOutline: "#d4a72c",
   hiOpacity: 0.86,
   pointColor: "#ffd23f",
-  transitFill: "#c3cad3",
-  transitOutline: "#aeb8c4",
-  transitOpacity: 0.58,
-  transitPointColor: "#b8c1cc",
-  transitPointOpacity: 0.82
+  transitFill: "#74716b",
+  transitOutline: "#5d5953",
+  transitOpacity: 0.7,
+  transitPointColor: "#5f5b55",
+  transitPointOpacity: 0.8
 };
 
 function initialColorMode(): ColorMode {
@@ -792,7 +792,7 @@ export default function App() {
             borderRadius: "50%",
             border: `1px solid ${colorMode === "dark" ? "#555762" : "#d8d8d8"}`,
             background: colorMode === "dark" ? "rgba(32,33,43,0.92)" : "rgba(255,255,255,0.92)",
-            color: colorMode === "dark" ? "#f0cf75" : "#58738f",
+            color: colorMode === "dark" ? "#3eb7f0" : "#58738f",
             cursor: "pointer",
             fontSize: 15,
             lineHeight: "30px",
@@ -823,8 +823,8 @@ export default function App() {
       {!embedMode && (
       <div style={{
         position: "absolute", top: 14, left: 14, padding: 16, borderRadius: 20,
-        background: colorMode === "dark" ? "rgba(29,42,61,0.72)" : "rgba(255,255,255,0.82)",
-        border: `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.14)" : "rgba(88,115,143,0.22)"}`,
+        background: colorMode === "dark" ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.82)",
+        border: `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(88,115,143,0.22)"}`,
         color: colorMode === "dark" ? "#f8fafc" : "#444",
         backdropFilter: "blur(12px)", minWidth: 240, boxShadow: "0 8px 32px rgba(0,0,0,0.18)"
       }}>
@@ -984,11 +984,11 @@ export default function App() {
         justifyContent: "center", alignItems: "start",
         borderRadius: flagListExpanded ? 14 : 999,
         background: stats.codes.length > 0
-          ? (colorMode === "dark" ? "rgba(29,42,61,0.68)" : "rgba(248,250,253,0.88)")
+          ? (colorMode === "dark" ? "rgba(15,23,42,0.42)" : "rgba(248,250,253,0.88)")
           : "transparent",
         backdropFilter: stats.codes.length > 0 ? "blur(10px)" : "none",
         border: stats.codes.length > 0
-          ? `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.14)" : "rgba(88,115,143,0.22)"}`
+          ? (colorMode === "dark" ? "none" : "1px solid rgba(88,115,143,0.22)")
           : "none",
         pointerEvents: "auto"
       }}>
@@ -1016,8 +1016,8 @@ export default function App() {
                height: 24,
                borderRadius: 999,
                border: `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.22)" : "rgba(88,115,143,0.32)"}`,
-               background: colorMode === "dark" ? "rgba(29,42,61,0.88)" : "rgba(255,255,255,0.94)",
-               color: colorMode === "dark" ? "#f0cf75" : "#58738f",
+               background: colorMode === "dark" ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.94)",
+               color: colorMode === "dark" ? "#e2e8f0" : "#58738f",
                cursor: "pointer",
                display: "flex",
                alignItems: "center",
