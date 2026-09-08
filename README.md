@@ -24,6 +24,7 @@
 * **🌏 Smart Views**: Automatically switches between **World**, **China**, **USA**, and **U.S. National Parks** views.
 * **🚆 Transit Tracking**: Distinguish between places you visited and places you only passed through.
 * **📊 Travel Stats**: See your visited country count and year-based travel summary.
+* **🌓 Light & Dark Maps**: Full pages include a theme toggle; embedded maps follow the host homepage theme automatically.
 * **🏷️ Multi-Tag System**: Create and manage multiple tags (e.g., "Me", "Couple", "Family"). Toggle between them to see different sets of footprints.
 * **💾 Backup & Restore**: Export your data as a JSON file. Share your footprints with friends or sync between devices by simply uploading the backup file.
 * **⚡️ Instant Search**: Integrated global geocoding allows you to search for any city and fly there instantly.
@@ -48,6 +49,10 @@ The app supports a public, read-only map backed by `public/footprints.json`:
 * [`/`](https://zilong-via.vercel.app/) keeps the original editable, browser-local experience.
 * [`/?public=1`](https://zilong-via.vercel.app/?public=1) opens the full public, read-only map with summary statistics.
 * [`/?embed=1`](https://zilong-via.vercel.app/?embed=1) opens a compact, read-only map for the homepage iframe. It keeps map controls, region switching, flags, and a small view-specific stats label.
+
+The full editable and public pages show a theme button in the upper-right
+corner. The embedded page hides that button and listens for `via-theme`
+messages from the host page so its map palette stays in sync.
 
 To update the public map, export a backup from the editable app, replace
 `public/footprints.json` with that file, and commit and push the change. The

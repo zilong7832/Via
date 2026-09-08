@@ -18,6 +18,7 @@ import type { TagId, Trip, Candidate, VisitType } from "./types";
 import { HOT_CITIES } from "./constants/hotCities";
 
 type ViewMode = "world" | "cn" | "us";
+type ColorMode = "light" | "dark";
 
 const CHINA_REGION_TOTAL = 34;
 const US_STATE_TOTAL = 50;
@@ -38,8 +39,10 @@ function getUSStateKey(trip: Trip): string | null {
   return normalizeUSStateName(raw) || raw || null;
 }
 
-// Theme colors
-const THEME = {
+const DARK_THEME = {
+  pageBackground: "#0b1220",
+  baseFill: "#152238",
+  baseLine: "#2b3a55",
   hiFill: "#45769c",    // Highlight fill
   hiOutline: "#729bb9", // Highlight outline
   hiOpacity: 1.0,       // Highlight opacity
@@ -51,10 +54,37 @@ const THEME = {
   transitPointOpacity: 0.48
 };
 
+const LIGHT_THEME = {
+  pageBackground: "#f7f5ef",
+  baseFill: "#e8e2d5",
+  baseLine: "#c9b98d",
+  hiFill: "#b58a32",
+  hiOutline: "#8a6500",
+  hiOpacity: 0.92,
+  pointColor: "#8a6500",
+  transitFill: "#b8b2a5",
+  transitOutline: "#8f887c",
+  transitOpacity: 0.38,
+  transitPointColor: "#777064",
+  transitPointOpacity: 0.58
+};
+
+function initialColorMode(): ColorMode {
+  try {
+    const saved = localStorage.getItem("via-theme");
+    if (saved === "light" || saved === "dark") return saved;
+  } catch {
+    // Fall back to the system preference.
+  }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export default function App() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
   const embedMode = query.get("embed") === "1";
   const publishedMode = embedMode || query.get("public") === "1";
+  const [colorMode, setColorMode] = useState<ColorMode>(initialColorMode);
+  const THEME = colorMode === "dark" ? DARK_THEME : LIGHT_THEME;
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const parkMarkersRef = useRef<maplibregl.Marker[]>([]);
@@ -97,6 +127,28 @@ export default function App() {
       .catch((error) => setMapError(error instanceof Error ? error.message : String(error)))
       .finally(() => setPublishedLoading(false));
   }, [publishedMode]);
+
+  useEffect(() => {
+    if (!embedMode) return;
+    const receiveTheme = (event: MessageEvent) => {
+      if (event.data?.type !== "via-theme") return;
+      if (event.data.theme === "light" || event.data.theme === "dark") {
+        setColorMode(event.data.theme);
+      }
+    };
+    window.addEventListener("message", receiveTheme);
+    return () => window.removeEventListener("message", receiveTheme);
+  }, [embedMode]);
+
+  function toggleColorMode() {
+    const next = colorMode === "dark" ? "light" : "dark";
+    setColorMode(next);
+    try {
+      localStorage.setItem("via-theme", next);
+    } catch {
+      // Theme persistence is optional.
+    }
+  }
 
   // Stats and flags
   const stats = useMemo(() => {
@@ -214,7 +266,7 @@ export default function App() {
       const minimalStyle: any = {
         version: 8,
         sources: {},
-        layers: [{ id: "bg", type: "background", paint: { "background-color": "#0b1220" } }]
+        layers: [{ id: "bg", type: "background", paint: { "background-color": THEME.pageBackground } }]
       };
 
       const map = new maplibregl.Map({
@@ -240,8 +292,8 @@ export default function App() {
         map.addSource("us-states", { type: "geojson", data: "/geo/us-states.geojson" });
 
         // Base layers
-        const baseFill = "#152238";
-        const baseLine = "#2b3a55";
+        const baseFill = THEME.baseFill;
+        const baseLine = THEME.baseLine;
 
         // World base
         map.addLayer({ id: "countries-base-fill", type: "fill", source: "countries", paint: { "fill-color": baseFill } });
@@ -317,6 +369,23 @@ export default function App() {
       setMapError(String(err));
     }
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    map.setPaintProperty("bg", "background-color", THEME.pageBackground);
+    ["countries", "cn", "us"].forEach((prefix) => {
+      map.setPaintProperty(`${prefix}-base-fill`, "fill-color", THEME.baseFill);
+      map.setPaintProperty(`${prefix}-base-line`, "line-color", THEME.baseLine);
+      map.setPaintProperty(`${prefix}-hi`, "fill-color", THEME.hiFill);
+      map.setPaintProperty(`${prefix}-hi-line`, "line-color", THEME.hiOutline);
+      map.setPaintProperty(`${prefix}-transit`, "fill-color", THEME.transitFill);
+      map.setPaintProperty(`${prefix}-transit-line`, "line-color", THEME.transitOutline);
+    });
+    map.setPaintProperty("trip-points-layer", "circle-color", THEME.pointColor);
+    map.setPaintProperty("trip-points-transit-layer", "circle-color", THEME.transitPointColor);
+  }, [colorMode, mapReady]);
 
   // Search
   useEffect(() => {
@@ -700,19 +769,47 @@ export default function App() {
   }, [view, mapReady, tag]);
 
   return (
-    <div style={{ position: "relative", width: "100vw", height: "100vh", background: "#0b1220", overflow: "hidden" }}>
+    <div className={`via-app theme-${colorMode}`} style={{ position: "relative", width: "100vw", height: "100vh", background: THEME.pageBackground, overflow: "hidden" }}>
       <div ref={mapElRef} style={{ position: "absolute", inset: 0 }} />
+
+      {!embedMode && (
+        <button
+          type="button"
+          onClick={toggleColorMode}
+          aria-label={`Switch to ${colorMode === "dark" ? "light" : "dark"} theme`}
+          title={`Switch to ${colorMode === "dark" ? "light" : "dark"} theme`}
+          style={{
+            position: "absolute",
+            top: 14,
+            right: 14,
+            zIndex: 10,
+            width: 32,
+            height: 32,
+            padding: 0,
+            borderRadius: "50%",
+            border: `1px solid ${colorMode === "dark" ? "#555762" : "#d8d8d8"}`,
+            background: colorMode === "dark" ? "rgba(32,33,43,0.92)" : "rgba(255,255,255,0.92)",
+            color: colorMode === "dark" ? "#3eb7f0" : "#8a6500",
+            cursor: "pointer",
+            fontSize: 15,
+            lineHeight: "30px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+          }}
+        >
+          {colorMode === "dark" ? "☀" : "☾"}
+        </button>
+      )}
 
       {embedMode && (
         <div style={{
           position: "absolute",
           top: 8,
           left: 8,
-          color: "rgba(248,250,252,0.9)",
+          color: colorMode === "dark" ? "rgba(248,250,252,0.9)" : "#6f5000",
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: "0.01em",
-          textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+          textShadow: colorMode === "dark" ? "0 1px 4px rgba(0,0,0,0.9)" : "0 1px 3px rgba(255,255,255,0.95)",
           pointerEvents: "none",
         }}>
           {publishedLoading ? "Loading…" : primaryStatsLabel}
@@ -723,8 +820,10 @@ export default function App() {
       {!embedMode && (
       <div style={{
         position: "absolute", top: 14, left: 14, padding: 16, borderRadius: 20,
-        background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.1)",
-        color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
+        background: colorMode === "dark" ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.78)",
+        border: `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(138,101,0,0.2)"}`,
+        color: colorMode === "dark" ? "#f8fafc" : "#444",
+        backdropFilter: "blur(12px)", minWidth: 240, boxShadow: "0 8px 32px rgba(0,0,0,0.18)"
       }}>
         <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.02em" }}>Travel Footprints</div>
         <div style={{ marginTop: 4, fontSize: 13, opacity: 0.8 }}>
@@ -750,7 +849,7 @@ export default function App() {
                       style={{ width: 60, padding: "4px 8px", borderRadius: 99, border: "none", outline: "none", fontSize: 12 }}
                    />
                  ) : (
-                  <Pill active={isActive} onClick={() => setTag(t)}>
+                  <Pill theme={colorMode} active={isActive} onClick={() => setTag(t)}>
                     <span onDoubleClick={() => startEditTag(t)} title="Double click to rename">{t}</span>
                     {tags.length > 1 && (
                       <span 
@@ -928,9 +1027,9 @@ export default function App() {
 
       {/* View Switch */}
       <div style={{ position: "absolute", left: embedMode ? 8 : 14, bottom: embedMode ? 12 : 20, display: "flex", gap: embedMode ? 4 : 8 }}>
-        <Pill compact={embedMode} active={view === "world"} onClick={() => setView("world")}>World</Pill>
-        <Pill compact={embedMode} active={view === "cn"} onClick={() => setView("cn")}>China</Pill>
-        <Pill compact={embedMode} active={view === "us"} onClick={() => setView("us")}>USA</Pill>
+        <Pill theme={colorMode} compact={embedMode} active={view === "world"} onClick={() => setView("world")}>World</Pill>
+        <Pill theme={colorMode} compact={embedMode} active={view === "cn"} onClick={() => setView("cn")}>China</Pill>
+        <Pill theme={colorMode} compact={embedMode} active={view === "us"} onClick={() => setView("us")}>USA</Pill>
       </div>
 
       {/* Add Button */}
