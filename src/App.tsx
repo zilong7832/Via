@@ -539,7 +539,7 @@ export default function App() {
         {mapError && <div style={{ color: "red", fontSize: 12 }}>{mapError}</div>}
 
         {/* Tag List */}
-        {!embedMode && (
+        {!publishedMode && (
         <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
           {tags.map(t => {
             const isEditing = editingTag === t;
