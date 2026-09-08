@@ -1,6 +1,6 @@
 # 🌍 Via: Travel Footprints
 
-> A privacy-first, interactive travel tracker. No backend, no database—your data stays in your browser.
+> A personal, interactive travel tracker based on [hwyii/Via](https://github.com/hwyii/Via), with private local editing and optional public, read-only maps.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/React-19-61dafb.svg)
@@ -45,14 +45,19 @@
 
 The app supports a public, read-only map backed by `public/footprints.json`:
 
-* `/?public=1` opens the full public map.
-* `/?embed=1` opens the compact version intended for an iframe.
-* `/` keeps the original editable, browser-local experience.
+* [`/`](https://zilong-via.vercel.app/) keeps the original editable, browser-local experience.
+* [`/?public=1`](https://zilong-via.vercel.app/?public=1) opens the full public, read-only map with summary statistics.
+* [`/?embed=1`](https://zilong-via.vercel.app/?embed=1) opens a compact, read-only map for the homepage iframe. It keeps map controls, region switching, flags, and a small view-specific stats label.
 
 To update the public map, export a backup from the editable app, replace
 `public/footprints.json` with that file, and commit and push the change. The
 public modes accept both the original array backup format and the newer
 versioned `{ "version", "tags", "trips" }` format.
+
+Published modes request the JSON directly from the `main` branch on GitHub and
+fall back to the copy bundled with the Vercel deployment if GitHub is
+temporarily unavailable. They do not read or overwrite the editable version's
+trip data in `localStorage`.
 
 ## 🚀 Getting Started
 
@@ -60,10 +65,7 @@ versioned `{ "version", "tags", "trips" }` format.
 
 If you just want to use the tool without coding:
 
-Choose the link that works best for your location:
-
-* Global / outside mainland China: **[Travel Footprints on Vercel](https://via-kappa-two.vercel.app/)**
-* Mainland China: **[Travel Footprints on EdgeOne Pages](https://viatravel.edgeone.cool/?eo_token=7ebce4e03eea93d3d2c3e96551538a2f&eo_time=1779335384)**
+Open **[Zilong's Travel Footprints](https://zilong-via.vercel.app/)**.
 
 1.  Open the link.
 2.  Click the **+** button at the bottom right.
@@ -103,7 +105,7 @@ For developers who want to contribute or modify features:
 
 ```bash
 # 1. Clone the repository
-git clone git@github.com:hwyii/Via.git
+git clone git@github.com:zilong7832/Via.git
 
 # 2. Install dependencies
 npm install

@@ -703,6 +703,22 @@ export default function App() {
     <div style={{ position: "relative", width: "100vw", height: "100vh", background: "#0b1220", overflow: "hidden" }}>
       <div ref={mapElRef} style={{ position: "absolute", inset: 0 }} />
 
+      {embedMode && (
+        <div style={{
+          position: "absolute",
+          top: 8,
+          left: 8,
+          color: "rgba(248,250,252,0.9)",
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.01em",
+          textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+          pointerEvents: "none",
+        }}>
+          {publishedLoading ? "Loading…" : primaryStatsLabel}
+        </div>
+      )}
+
       {/* Stats Card */}
       {!embedMode && (
       <div style={{
