@@ -2,34 +2,39 @@ import type { Trip } from "./types";
 
 const KEY = "travel-footprints:trips";
 const TAGS_KEY = "travel-footprints:tags";
+const PARK_VISITS_KEY = "travel-footprints:park-visits";
+const PARK_MAP_VISIBILITY_KEY = "travel-footprints:park-map-visible";
 
-export type FootprintsData = {
-  version: number;
+export type TravelBackup = {
+  version: 2;
   tags: string[];
   trips: Trip[];
 };
 
-function parseFootprintsData(value: unknown): FootprintsData {
+function parsePublishedData(value: unknown): TravelBackup {
   if (Array.isArray(value)) {
     const trips = value as Trip[];
-    return { version: 1, tags: Array.from(new Set(trips.map((trip) => trip.tag))), trips };
+    return {
+      version: 2,
+      tags: Array.from(new Set(trips.map((trip) => trip.tag).filter(Boolean))),
+      trips,
+    };
   }
 
   if (value && typeof value === "object") {
-    const data = value as Partial<FootprintsData>;
+    const data = value as Partial<TravelBackup>;
     if (Array.isArray(data.trips)) {
-      const inferredTags = Array.from(new Set(data.trips.map((trip) => trip.tag)));
+      const inferredTags = Array.from(new Set(data.trips.map((trip) => trip.tag).filter(Boolean)));
       return {
-        version: typeof data.version === "number" ? data.version : 2,
-        tags: Array.isArray(data.tags) ? data.tags : inferredTags,
+        version: 2,
+        tags: Array.isArray(data.tags) && data.tags.length ? data.tags : inferredTags,
         trips: data.trips,
       };
     }
   }
 
-  throw new Error("Invalid footprint data format");
+  throw new Error("Invalid published footprint data format");
 }
-
 
 export function loadTrips(): Trip[] {
   try {
@@ -53,7 +58,7 @@ export function clearTrips() {
 export function loadTags(): string[] {
   try {
     const raw = localStorage.getItem(TAGS_KEY);
-    if (!raw) return ["Me", "Couple"]; // 默认标签
+    if (!raw) return ["Me", "Couple"]; // Default tags
     const data = JSON.parse(raw);
     return Array.isArray(data) ? data : ["Me", "Couple"];
   } catch {
@@ -65,46 +70,94 @@ export function saveTags(tags: string[]) {
   localStorage.setItem(TAGS_KEY, JSON.stringify(tags));
 }
 
-export async function loadPublishedData(): Promise<FootprintsData> {
+export async function loadPublishedData(): Promise<TravelBackup> {
   const githubUrl = `https://raw.githubusercontent.com/zilong7832/Via/main/public/footprints.json?v=${Date.now()}`;
 
   try {
     const response = await fetch(githubUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`GitHub returned ${response.status}`);
-    return parseFootprintsData(await response.json());
+    return parsePublishedData(await response.json());
   } catch (githubError) {
     const fallback = await fetch("/footprints.json", { cache: "no-store" });
     if (!fallback.ok) {
       const detail = githubError instanceof Error ? githubError.message : String(githubError);
       throw new Error(`Could not load published footprints (${detail}; fallback ${fallback.status})`);
     }
-    return parseFootprintsData(await fallback.json());
+    return parsePublishedData(await fallback.json());
   }
 }
 
-// 🟢 导出功能：把数据变成文件下载
-export function exportData(trips: Trip[]) {
-  const dataStr = JSON.stringify(trips, null, 2); // 格式化，好看一点
+export function loadParkVisits(): Record<string, string[]> {
+  try {
+    const raw = localStorage.getItem(PARK_VISITS_KEY);
+    if (!raw) return {};
+    const data = JSON.parse(raw);
+    return typeof data === "object" && data !== null && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveParkVisits(visits: Record<string, string[]>) {
+  localStorage.setItem(PARK_VISITS_KEY, JSON.stringify(visits));
+}
+
+export function loadParkMapVisibility(): boolean {
+  try {
+    return localStorage.getItem(PARK_MAP_VISIBILITY_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function saveParkMapVisibility(visible: boolean) {
+  localStorage.setItem(PARK_MAP_VISIBILITY_KEY, String(visible));
+}
+
+// Download trips as JSON.
+export function exportData(trips: Trip[], tags: string[]) {
+  const validTags = tags.filter(Boolean);
+  const backup: TravelBackup = {
+    version: 2,
+    tags: validTags,
+    trips: trips.filter(t => validTags.includes(t.tag))
+  };
+  const dataStr = JSON.stringify(backup, null, 2); // Pretty-print JSON
   const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   
   const a = document.createElement("a");
   a.href = url;
-  a.download = `travel-backup-${new Date().toISOString().slice(0, 10)}.json`; // 文件名带日期
+  a.download = `travel-backup-${new Date().toISOString().slice(0, 10)}.json`; // Dated filename
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-// 🟢 导入功能：解析文件内容
-export function importData(file: File): Promise<Trip[]> {
+// Parse an imported backup file.
+export function importData(file: File): Promise<{ trips: Trip[]; tags: string[] | null }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const result = e.target?.result as string;
-        resolve(parseFootprintsData(JSON.parse(result)).trips);
+        const parsed = JSON.parse(result);
+        if (Array.isArray(parsed)) {
+          resolve({ trips: parsed, tags: null });
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          Array.isArray(parsed.trips) &&
+          Array.isArray(parsed.tags)
+        ) {
+          const rawTags = parsed.tags as unknown[];
+          const tags = Array.from(new Set(rawTags.filter((tag): tag is string => typeof tag === "string" && tag.trim() !== "")));
+          const trips = (parsed.trips as Trip[]).filter(t => tags.includes(t.tag));
+          resolve({ trips, tags });
+        } else {
+          reject("Invalid data format");
+        }
       } catch {
         reject("Invalid JSON file");
       }
