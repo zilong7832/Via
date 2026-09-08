@@ -983,8 +983,13 @@ export default function App() {
         overflowX: "hidden", scrollbarWidth: "none",
         justifyContent: "center", alignItems: "start",
         borderRadius: flagListExpanded ? 14 : 999,
-        background: stats.codes.length > 0 ? "rgba(15,23,42,0.42)" : "transparent",
+        background: stats.codes.length > 0
+          ? (colorMode === "dark" ? "rgba(23,32,51,0.58)" : "rgba(251,250,247,0.84)")
+          : "transparent",
         backdropFilter: stats.codes.length > 0 ? "blur(10px)" : "none",
+        border: stats.codes.length > 0
+          ? `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(138,101,0,0.2)"}`
+          : "none",
         pointerEvents: "auto"
       }}>
          <div style={{
@@ -1010,9 +1015,9 @@ export default function App() {
                width: 24,
                height: 24,
                borderRadius: 999,
-               border: "1px solid rgba(255,255,255,0.22)",
-               background: "rgba(15,23,42,0.78)",
-               color: "#e2e8f0",
+               border: `1px solid ${colorMode === "dark" ? "rgba(255,255,255,0.22)" : "rgba(138,101,0,0.35)"}`,
+               background: colorMode === "dark" ? "rgba(23,32,51,0.82)" : "rgba(255,255,255,0.9)",
+               color: colorMode === "dark" ? "#e2e8f0" : "#8a6500",
                cursor: "pointer",
                display: "flex",
                alignItems: "center",
