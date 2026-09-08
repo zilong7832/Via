@@ -521,14 +521,14 @@ export default function App() {
 
       {/* Stats Card */}
       <div style={{
-        position: "absolute", top: embedMode ? 10 : 14, left: embedMode ? 10 : 14, padding: embedMode ? 12 : 16, borderRadius: 20,
+        position: "absolute", top: embedMode ? 8 : 14, left: embedMode ? 8 : 14, padding: embedMode ? "8px 10px" : 16, borderRadius: embedMode ? 12 : 20,
         background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.1)",
-        color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: embedMode ? 200 : 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
+        color: "#f8fafc", backdropFilter: "blur(12px)", minWidth: embedMode ? 0 : 240, boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
       }}>
-        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.02em" }}>
+        <div style={{ fontWeight: 800, fontSize: embedMode ? 13 : 16, letterSpacing: "0.02em" }}>
           {embedMode ? `${stats.footprints} Footprints` : "Travel Footprints"}
         </div>
-        <div style={{ marginTop: 4, fontSize: 13, opacity: 0.8 }}>
+        <div style={{ marginTop: embedMode ? 2 : 4, fontSize: embedMode ? 10 : 13, opacity: 0.8 }}>
           {publishedLoading
             ? "Loading published map…"
             : embedMode
@@ -658,22 +658,22 @@ export default function App() {
 
       {/* Flag Bar (底部国旗条 - 无背景) */}
       <div style={{
-        position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
-        display: "flex", gap: 12, padding: "0 16px",
+        position: "absolute", bottom: embedMode ? 12 : 20, left: "50%", transform: "translateX(-50%)",
+        display: "flex", gap: embedMode ? 6 : 12, padding: embedMode ? "0 8px" : "0 16px",
         maxWidth: "80vw", overflowX: "auto", scrollbarWidth: "none", pointerEvents: "none"
       }}>
          {stats.codes.map(code => (
-           <span key={code} title={code} style={{ fontSize: 20, cursor: "default", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
+           <span key={code} title={code} style={{ fontSize: embedMode ? 15 : 20, cursor: "default", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
              {getFlagEmoji(code)}
            </span>
          ))}
       </div>
 
       {/* View Switch */}
-      <div style={{ position: "absolute", left: 14, bottom: 20, display: "flex", gap: 8 }}>
-        <Pill active={view === "world"} onClick={() => setView("world")}>World</Pill>
-        <Pill active={view === "cn"} onClick={() => setView("cn")}>China</Pill>
-        <Pill active={view === "us"} onClick={() => setView("us")}>USA</Pill>
+      <div style={{ position: "absolute", left: embedMode ? 8 : 14, bottom: embedMode ? 12 : 20, display: "flex", gap: embedMode ? 4 : 8 }}>
+        <Pill compact={embedMode} active={view === "world"} onClick={() => setView("world")}>World</Pill>
+        <Pill compact={embedMode} active={view === "cn"} onClick={() => setView("cn")}>China</Pill>
+        <Pill compact={embedMode} active={view === "us"} onClick={() => setView("us")}>USA</Pill>
       </div>
 
       {/* Add Button */}
