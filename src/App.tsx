@@ -40,33 +40,33 @@ function getUSStateKey(trip: Trip): string | null {
 }
 
 const DARK_THEME = {
-  pageBackground: "#0b1220",
-  baseFill: "#152238",
-  baseLine: "#2b3a55",
-  hiFill: "#45769c",    // Highlight fill
-  hiOutline: "#729bb9", // Highlight outline
-  hiOpacity: 1.0,       // Highlight opacity
+  pageBackground: "#172033",
+  baseFill: "#26364f",
+  baseLine: "#465875",
+  hiFill: "#7199b7",    // Highlight fill
+  hiOutline: "#a2c1d7", // Highlight outline
+  hiOpacity: 0.9,        // Highlight opacity
   pointColor: "#29dff2", // Footprint point
-  transitFill: "#d4d3d5",
-  transitOutline: "#d4d3d5",
-  transitOpacity: 0.26,
-  transitPointColor: "#d4d3d5",
-  transitPointOpacity: 0.48
+  transitFill: "#777c84",
+  transitOutline: "#5f646c",
+  transitOpacity: 0.68,
+  transitPointColor: "#6b7078",
+  transitPointOpacity: 0.78
 };
 
 const LIGHT_THEME = {
-  pageBackground: "#f7f5ef",
-  baseFill: "#e8e2d5",
-  baseLine: "#c9b98d",
-  hiFill: "#b58a32",
-  hiOutline: "#8a6500",
-  hiOpacity: 0.92,
+  pageBackground: "#fbfaf7",
+  baseFill: "#f1ede4",
+  baseLine: "#d9cfb8",
+  hiFill: "#d8c38f",
+  hiOutline: "#ae8a35",
+  hiOpacity: 0.88,
   pointColor: "#8a6500",
-  transitFill: "#b8b2a5",
-  transitOutline: "#8f887c",
-  transitOpacity: 0.38,
-  transitPointColor: "#777064",
-  transitPointOpacity: 0.58
+  transitFill: "#74716b",
+  transitOutline: "#5d5953",
+  transitOpacity: 0.7,
+  transitPointColor: "#5f5b55",
+  transitPointOpacity: 0.8
 };
 
 function initialColorMode(): ColorMode {
@@ -379,12 +379,15 @@ export default function App() {
       map.setPaintProperty(`${prefix}-base-fill`, "fill-color", THEME.baseFill);
       map.setPaintProperty(`${prefix}-base-line`, "line-color", THEME.baseLine);
       map.setPaintProperty(`${prefix}-hi`, "fill-color", THEME.hiFill);
+      map.setPaintProperty(`${prefix}-hi`, "fill-opacity", THEME.hiOpacity);
       map.setPaintProperty(`${prefix}-hi-line`, "line-color", THEME.hiOutline);
       map.setPaintProperty(`${prefix}-transit`, "fill-color", THEME.transitFill);
+      map.setPaintProperty(`${prefix}-transit`, "fill-opacity", THEME.transitOpacity);
       map.setPaintProperty(`${prefix}-transit-line`, "line-color", THEME.transitOutline);
     });
     map.setPaintProperty("trip-points-layer", "circle-color", THEME.pointColor);
     map.setPaintProperty("trip-points-transit-layer", "circle-color", THEME.transitPointColor);
+    map.setPaintProperty("trip-points-transit-layer", "circle-opacity", THEME.transitPointOpacity);
   }, [colorMode, mapReady]);
 
   // Search
@@ -769,7 +772,7 @@ export default function App() {
   }, [view, mapReady, tag]);
 
   return (
-    <div className={`via-app theme-${colorMode}`} style={{ position: "relative", width: "100vw", height: "100vh", background: THEME.pageBackground, overflow: "hidden" }}>
+    <div className={`via-app theme-${colorMode}${embedMode ? " embed-mode" : ""}`} style={{ position: "relative", width: "100vw", height: "100vh", background: THEME.pageBackground, overflow: "hidden" }}>
       <div ref={mapElRef} style={{ position: "absolute", inset: 0 }} />
 
       {!embedMode && (
@@ -973,12 +976,13 @@ export default function App() {
       {/* Flag bar */}
       <div style={{
         position: "absolute", bottom: embedMode ? 12 : 20, left: "50%", transform: "translateX(-50%)",
-        display: "flex", gap: embedMode ? 5 : 8, padding: embedMode ? "5px 7px" : "8px 10px",
+        display: "flex", gap: embedMode ? 5 : 8,
+        padding: flagListExpanded ? (embedMode ? "9px 11px" : "12px 14px") : (embedMode ? "5px 7px" : "8px 10px"),
         maxWidth: "80vw", maxHeight: flagListExpanded ? "32vh" : 40,
         overflowY: flagListExpanded ? "auto" : "hidden",
         overflowX: "hidden", scrollbarWidth: "none",
         justifyContent: "center", alignItems: "start",
-        borderRadius: 999,
+        borderRadius: flagListExpanded ? 14 : 999,
         background: stats.codes.length > 0 ? "rgba(15,23,42,0.42)" : "transparent",
         backdropFilter: stats.codes.length > 0 ? "blur(10px)" : "none",
         pointerEvents: "auto"
