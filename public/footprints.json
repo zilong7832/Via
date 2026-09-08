@@ -1,10 +1,22 @@
 {
   "version": 2,
   "tags": [
-    "I am the World!",
-    "with baby"
+    "I am the World!"
   ],
   "trips": [
+    {
+      "id": "mtsybpvz-af7tcn",
+      "date": "2026-09-08",
+      "tag": "I am the World!",
+      "visitType": "visited",
+      "place": {
+        "name": "Chapel Hill, Orange County, North Carolina, United States",
+        "lat": 35.9131542,
+        "lon": -79.05578,
+        "countryIso2": "US",
+        "admin1": "North Carolina"
+      }
+    },
     {
       "id": "mtswmxic-2kzmqr",
       "date": "2026-09-08",
