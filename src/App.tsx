@@ -40,13 +40,13 @@ function getUSStateKey(trip: Trip): string | null {
 }
 
 const DARK_THEME = {
-  pageBackground: "#1d2a3d",
-  baseFill: "#34465f",
-  baseLine: "#60738e",
+  pageBackground: "#172033",
+  baseFill: "#26364f",
+  baseLine: "#465875",
   hiFill: "#d7ad43",    // Visited areas
   hiOutline: "#f0cf75",
   hiOpacity: 0.88,
-  pointColor: "#ffd45c", // Visited points
+  pointColor: "#ffe66d", // Visited points
   transitFill: "#aeb7c3",
   transitOutline: "#c7ced7",
   transitOpacity: 0.52,
@@ -55,13 +55,13 @@ const DARK_THEME = {
 };
 
 const LIGHT_THEME = {
-  pageBackground: "#f7f9fc",
-  baseFill: "#e6edf5",
-  baseLine: "#bac8d8",
+  pageBackground: "#fbfaf7",
+  baseFill: "#f1ede4",
+  baseLine: "#d9cfb8",
   hiFill: "#edc34f",
   hiOutline: "#d4a72c",
   hiOpacity: 0.86,
-  pointColor: "#f4b925",
+  pointColor: "#ffd23f",
   transitFill: "#c3cad3",
   transitOutline: "#aeb8c4",
   transitOpacity: 0.58,
