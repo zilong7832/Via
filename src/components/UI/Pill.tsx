@@ -18,13 +18,13 @@ export function Pill({ active, compact = false, theme = "dark", children, onClic
         padding: compact ? "5px 8px" : "8px 12px",
         fontSize: compact ? 11 : undefined,
         borderRadius: 999,
-        border: `1px solid ${light ? "rgba(138,101,0,0.35)" : "rgba(255,255,255,0.18)"}`,
+        border: `1px solid ${light ? "rgba(88,115,143,0.32)" : "rgba(255,255,255,0.18)"}`,
         background: active
-          ? (light ? "#8a6500" : "rgba(255,255,255,0.92)")
-          : (light ? "rgba(255,255,255,0.82)" : "rgba(10,16,28,0.55)"),
+          ? (light ? "#6688aa" : "rgba(255,255,255,0.92)")
+          : (light ? "rgba(255,255,255,0.88)" : "rgba(10,16,28,0.55)"),
         color: active
           ? (light ? "#fff" : "#0b1220")
-          : (light ? "#6f5000" : "rgba(255,255,255,0.92)"),
+          : (light ? "#40566f" : "rgba(255,255,255,0.92)"),
         cursor: "pointer",
         backdropFilter: "blur(10px)",
         whiteSpace: "nowrap"
