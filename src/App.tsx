@@ -520,6 +520,7 @@ export default function App() {
       <div ref={mapElRef} style={{ position: "absolute", inset: 0 }} />
 
       {/* Stats Card */}
+      {!embedMode && (
       <div style={{
         position: "absolute", top: embedMode ? 8 : 14, left: embedMode ? 8 : 14, padding: embedMode ? "8px 10px" : 16, borderRadius: embedMode ? 12 : 20,
         background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.1)",
@@ -655,6 +656,7 @@ export default function App() {
          </div>
         )}
       </div>
+      )}
 
       {/* Flag Bar (底部国旗条 - 无背景) */}
       <div style={{

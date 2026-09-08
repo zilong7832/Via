@@ -66,9 +66,20 @@ export function saveTags(tags: string[]) {
 }
 
 export async function loadPublishedData(): Promise<FootprintsData> {
-  const response = await fetch("/footprints.json", { cache: "no-cache" });
-  if (!response.ok) throw new Error(`Could not load published footprints (${response.status})`);
-  return parseFootprintsData(await response.json());
+  const githubUrl = `https://raw.githubusercontent.com/zilong7832/Via/main/public/footprints.json?v=${Date.now()}`;
+
+  try {
+    const response = await fetch(githubUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error(`GitHub returned ${response.status}`);
+    return parseFootprintsData(await response.json());
+  } catch (githubError) {
+    const fallback = await fetch("/footprints.json", { cache: "no-store" });
+    if (!fallback.ok) {
+      const detail = githubError instanceof Error ? githubError.message : String(githubError);
+      throw new Error(`Could not load published footprints (${detail}; fallback ${fallback.status})`);
+    }
+    return parseFootprintsData(await fallback.json());
+  }
 }
 
 // 🟢 导出功能：把数据变成文件下载
